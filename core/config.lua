@@ -1,0 +1,17 @@
+return {
+    Title = "Dominant",
+    Version = "3.3.2",
+    Folder = "Dominant",
+    SettingsFile = "Dominant/session.json",
+    Theme = "Dark",
+    KeyTheme = "Dominant",
+    Logo = "rbxassetid://116590139091461",
+    VindUrl = "https://raw.githubusercontent.com/Skinny-yz/vindUI-Test/main/full.luau",
+    RayfieldUrl = "https://sirius.menu/gen2",
+    CascadeUrl = nil, -- vendor/cascade.lua is preferred
+    OphynUrl = "https://ophyn.space/interface",
+    Keys = { "dominant", "arroganthi", "1234" },
+    SaveKey = false,
+    Discord = "discord.gg/yourcode",
+    Website = "https://example.com",
+}

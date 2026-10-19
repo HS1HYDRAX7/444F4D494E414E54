@@ -1,0 +1,89 @@
+-- Script By @AzizAnzofficiall on Youtube
+-- ScriptBlox Account @AzScripter
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local camera = workspace.CurrentCamera
+
+local head = character:WaitForChild("Head")
+local hrp = character:WaitForChild("HumanoidRootPart")
+
+local shakePower = 0
+local targetFOV = 70
+local fovSpeed = 10
+
+local baseOffsetY = -1.5
+local baseOffsetZ = -1
+local bobAmount = 0.2
+local bobSpeed = 2
+
+local headAttachments = {"HatAttachment", "HairAttachment", "FaceFrontAttachment", "FaceCenterAttachment"}
+
+player.CameraMode = Enum.CameraMode.Classic
+
+RunService.RenderStepped:Connect(function()
+	local isFirstPerson = (head.Position - camera.CFrame.Position).Magnitude < 2
+
+	for _, part in ipairs(character:GetDescendants()) do
+		if part:IsA("BasePart") then
+			if part.Name == "Head" then
+				part.LocalTransparencyModifier = isFirstPerson and 1 or 0
+			elseif part.Name == "Handle" then
+				local attachment = part:FindFirstChildOfClass("Attachment")
+				if attachment and table.find(headAttachments, attachment.Name) then
+					part.LocalTransparencyModifier = isFirstPerson and 1 or 0
+				else
+					part.LocalTransparencyModifier = 0
+				end
+			elseif part.Name ~= "HumanoidRootPart" then
+				part.LocalTransparencyModifier = 0
+			end
+		end
+	end
+end)
+
+humanoid.HealthChanged:Connect(function(health)
+	if health < humanoid.MaxHealth then
+		shakePower += 0.6
+	end
+end)
+
+humanoid.StateChanged:Connect(function(_, state)
+	if state == Enum.HumanoidStateType.Landed then
+		shakePower += 0.8
+	end
+end)
+
+workspace.ChildAdded:Connect(function(child)
+	if child:IsA("Explosion") and (child.Position - camera.CFrame.Position).Magnitude < 40 then
+		shakePower += 1.2
+	end
+end)
+
+RunService.RenderStepped:Connect(function(dt)
+	local time = tick()
+
+	local bob = Vector3.new(
+		math.sin(time * bobSpeed) * bobAmount,
+		math.abs(math.cos(time * bobSpeed)) * bobAmount * 0.6,
+		0
+	)
+
+	local shake = Vector3.new(
+		math.random(-100, 100) / 100 * shakePower,
+		math.random(-100, 100) / 100 * shakePower,
+		math.random(-100, 100) / 100 * shakePower
+	)
+
+	shakePower = math.max(shakePower - 5 * dt, 0)
+
+	local headRelativePos = hrp.CFrame:ToObjectSpace(head.CFrame).Position
+	
+	humanoid.CameraOffset = headRelativePos + Vector3.new(0, baseOffsetY, baseOffsetZ) + bob + shake
+	
+	camera.FieldOfView = camera.FieldOfView + (targetFOV - camera.FieldOfView) * fovSpeed * dt
+end)

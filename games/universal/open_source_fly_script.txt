@@ -1,0 +1,134 @@
+local players = game:GetService("Players")
+local uis = game:GetService("UserInputService")
+local run = game:GetService("RunService")
+local lp = players.LocalPlayer
+
+local core = Instance.new("ScreenGui")
+core.Name = "fly script"
+core.ResetOnSpawn = false
+core.Parent = lp:WaitForChild("PlayerGui")
+
+local main = Instance.new("Frame")
+main.Size = UDim2.new(0, 260, 0, 160)
+main.Position = UDim2.new(0.5, -130, 0.5, -80)
+main.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+main.BorderSizePixel = 0
+main.Active = true
+main.Draggable = true
+main.Parent = core
+
+local grad = Instance.new("UIGradient")
+grad.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 40, 45)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 20, 25))
+})
+grad.Rotation = 45
+grad.Parent = main
+
+Instance.new("UICorner", main).CornerRadius = UDim.new(0, 10)
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, -10, 0, 35)
+title.Position = UDim2.new(0, 10, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "FLIGHT"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Font = Enum.Font.SourceSansBold
+title.TextSize = 16
+title.Parent = main
+
+local close = Instance.new("TextButton")
+close.Size = UDim2.new(0, 30, 0, 30)
+close.Position = UDim2.new(1, -35, 0, 5)
+close.BackgroundTransparency = 1
+close.Text = "×"
+close.TextColor3 = Color3.fromRGB(255, 100, 100)
+close.TextSize = 25
+close.Parent = main
+
+local function make_box(placeholder, pos, default)
+    local b = Instance.new("TextBox")
+    b.Size = UDim2.new(0.85, 0, 0, 35)
+    b.Position = pos
+    b.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    b.BackgroundTransparency = 0.6
+    b.PlaceholderText = placeholder
+    b.Text = default
+    b.TextColor3 = Color3.new(1, 1, 1)
+    b.Font = Enum.Font.SourceSans
+    b.TextSize = 14
+    b.Parent = main
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+    return b
+end
+
+local spd_in = make_box("Speed (Num)", UDim2.new(0.075, 0, 0.3, 0), "50")
+local key_in = make_box("Toggle Key (Char)", UDim2.new(0.075, 0, 0.6, 0), "E")
+
+local active = false
+local cur_speed = 50
+local bind = Enum.KeyCode.E
+
+local bv = Instance.new("BodyVelocity")
+local bg = Instance.new("BodyGyro")
+
+local function toggle()
+    local root = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+
+    active = not active
+    if active then
+        bv.Parent = root
+        bv.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+        bv.Velocity = Vector3.new(0, 0, 0)
+
+        bg.Parent = root
+        bg.MaxTorque = Vector3.new(1e5, 1e5, 1e5)
+        bg.CFrame = root.CFrame
+    else
+        bv.Parent = nil
+        bg.Parent = nil
+        if lp.Character:FindFirstChildOfClass("Humanoid") then
+            lp.Character.Humanoid.PlatformStand = false
+        end
+    end
+end
+
+close.MouseButton1Click:Connect(function()
+    if active then toggle() end
+    core:Destroy()
+end)
+
+spd_in.FocusLost:Connect(function()
+    cur_speed = tonumber(spd_in.Text) or 50
+end)
+
+key_in.FocusLost:Connect(function()
+    local ok, res = pcall(function() return Enum.KeyCode[key_in.Text:upper()] end)
+    if ok then bind = res end
+end)
+
+uis.InputBegan:Connect(function(io, gpe)
+    if not gpe and io.KeyCode == bind then
+        toggle()
+    end
+end)
+
+run.RenderStepped:Connect(function()
+    local char = lp.Character
+    if active and char and char:FindFirstChild("HumanoidRootPart") then
+        local root = char.HumanoidRootPart
+        local cam = workspace.CurrentCamera
+        local dir = Vector3.new(0, 0, 0)
+
+        if uis:IsKeyDown(Enum.KeyCode.W) then dir += cam.CFrame.LookVector end
+        if uis:IsKeyDown(Enum.KeyCode.S) then dir -= cam.CFrame.LookVector end
+        if uis:IsKeyDown(Enum.KeyCode.A) then dir -= cam.CFrame.RightVector end
+        if uis:IsKeyDown(Enum.KeyCode.D) then dir += cam.CFrame.RightVector end
+
+        bv.Velocity = dir * cur_speed
+        bg.CFrame = cam.CFrame
+        char.Humanoid.PlatformStand = true
+    end
+end)

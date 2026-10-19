@@ -8,7 +8,7 @@ return {
     Logo = "rbxassetid://116590139091461",
     VindUrl = "https://raw.githubusercontent.com/Skinny-yz/vindUI-Test/main/full.luau",
     OphynUrl = "https://ophyn.space/interface",
-    Keys = { "dominant", "arroganthi", "1234" },
+    Keys = { "dominant", "J&T", "J&T Forever" },
     SaveKey = false,
     Discord = "discord.gg/yourcode",
     Website = "https://example.com",

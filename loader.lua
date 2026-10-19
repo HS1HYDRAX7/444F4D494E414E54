@@ -210,7 +210,7 @@ local function createScreen()
         ResetOnSpawn = false,
         IgnoreGuiInset = true,
         ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
-        DisplayOrder = 1000,
+        DisplayOrder = 2000,
     })
     placeGui(gui)
 
@@ -220,6 +220,7 @@ local function createScreen()
         AnchorPoint = Vector2.new(0.5, 0.5),
         BackgroundTransparency = 1,
         BorderSizePixel = 0,
+        ZIndex = 100,
     }, gui)
 
     -- On small screens the whole card is scaled down so it is never cut off
@@ -237,13 +238,30 @@ local function createScreen()
     end
 
     local shadow = make("ImageLabel", {
-        Size = UDim2.new(1, 50, 1, 50),
-        Position = UDim2.new(0, -25, 0, -25),
+        Size = UDim2.new(1, 60, 1, 60),
+        Position = UDim2.new(0, -30, 0, -30),
+        AnchorPoint = Vector2.new(0.5, 0.5),
         BackgroundTransparency = 1,
         Image = IMAGES.shadow,
-        ImageColor3 = Color3.new(0, 0, 0),
+        ImageColor3 = PALETTE.shadow,
         ImageTransparency = 1,
+        ScaleType = Enum.ScaleType.Stretch,
+        ZIndex = 0,
     }, main)
+    
+    -- Second shadow layer for better depth
+    local shadow2 = make("ImageLabel", {
+        Size = UDim2.new(1, 30, 1, 30),
+        Position = UDim2.new(0, -15, 0, -15),
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        BackgroundTransparency = 1,
+        Image = IMAGES.shadow,
+        ImageColor3 = PALETTE.shadow,
+        ImageTransparency = 1,
+        ScaleType = Enum.ScaleType.Stretch,
+        ZIndex = 0,
+    }, main)
+
 
     local canvas = make("Frame", {
         Size = UDim2.new(1, 0, 1, 0),
@@ -478,18 +496,25 @@ local function createScreen()
     -- Thin progress bar along the bottom edge of the card
     local shown = 0
     local barTrack = make("Frame", {
-        Position = UDim2.new(0, 0, 1, -3),
-        Size = UDim2.new(1, 0, 0, 3),
+        Position = UDim2.new(0, 14, 1, -3),
+        Size = UDim2.new(1, -28, 0, 3),
         BackgroundColor3 = PALETTE.panel,
         BackgroundTransparency = 1,
         BorderSizePixel = 0,
     }, canvas)
+    corner(barTrack, 1.5)
+    
     local barFill = make("Frame", {
         Size = UDim2.new(0, 0, 1, 0),
         BackgroundColor3 = PALETTE.accent,
         BackgroundTransparency = 1,
         BorderSizePixel = 0,
     }, barTrack)
+    corner(barFill, 1.5)
+    make("UIGradient", {
+        Rotation = 90,
+        Color = ColorSequence.new(PALETTE.accent, PALETTE.accent_secondary),
+    }, barFill)
     make("UIGradient", {
         Transparency = NumberSequence.new({
             NumberSequenceKeypoint.new(0, 0.55),
@@ -604,6 +629,7 @@ local function createScreen()
             tween(logo, 0.5, { ImageTransparency = 0 })
             tween(border, 0.5, { Transparency = 0.55 })
             tween(shadow, 0.5, { ImageTransparency = 0.6 })
+            tween(shadow2, 0.5, { ImageTransparency = 0.4 })
             grow.Completed:Wait()
             task.wait(SQUARE_TIME - 0.6)
 
@@ -737,17 +763,31 @@ local function createScreen()
         task.spawn(function()
             waitIntro()
             spin:Cancel()
-            hideCard()
-            setLockup(1, 0.3)
-            tween(spinnerGroup, 0.3, { GroupTransparency = 1 })
-            tween(status, 0.3, { TextTransparency = 1 })
-            tween(statusPill, 0.3, { BackgroundTransparency = 1 })
-            tween(barTrack, 0.3, { BackgroundTransparency = 1 })
-            tween(barFill, 0.3, { BackgroundTransparency = 1 })
-            tween(shadow, 0.4, { ImageTransparency = 1 })
-            tween(decor, 0.4, { GroupTransparency = 1 })
-            local last = tween(canvas, 0.4, { BackgroundTransparency = 1 })
-            last.Completed:Wait()
+            
+            -- Smooth transition: resize main to match Vind window size
+            -- Vind typically uses ~400-500 width, so we'll animate to that
+            local targetSize = UDim2.new(0, FINAL_W, 0, FINAL_H)
+            
+            -- First, fade out the loading elements
+            tween(spinnerGroup, 0.2, { GroupTransparency = 1 })
+            tween(status, 0.2, { TextTransparency = 1 })
+            tween(statusPill, 0.2, { BackgroundTransparency = 1 })
+            tween(barTrack, 0.2, { BackgroundTransparency = 1 })
+            tween(barFill, 0.2, { BackgroundTransparency = 1 })
+            
+            -- Then resize the main frame to Vind dimensions smoothly
+            tween(main, 0.4, { Size = targetSize }, Enum.EasingStyle.Quint)
+            
+            -- Show Vind creation overlay with matching size
+            screen.showVindCreation()
+            
+            -- Fade out the entire loader while Vind loads
+            tween(canvas, 0.5, { BackgroundTransparency = 1 })
+            tween(decor, 0.5, { GroupTransparency = 1 })
+            tween(shadow, 0.5, { ImageTransparency = 1 })
+            
+            -- Wait for Vind to fully load, then destroy loader
+            task.wait(1.5)
             gui:Destroy()
         end)
     end
@@ -762,17 +802,17 @@ local function createScreen()
         BackgroundColor3 = Color3.fromRGB(0, 0, 0),
         BackgroundTransparency = 1,
         BorderSizePixel = 0,
-        ZIndex = 80,
+        ZIndex = 90,
         Visible = false,
     }, gui)
 
     local vindCard = make("Frame", {
-        Size = UDim2.new(0, 300, 0, 130),
+        Size = UDim2.new(0, FINAL_W, 0, FINAL_H),
         Position = UDim2.new(0.5, 0, 0.5, 0),
         AnchorPoint = Vector2.new(0.5, 0.5),
         BackgroundColor3 = PALETTE.panel,
         BorderSizePixel = 0,
-        ZIndex = 81,
+        ZIndex = 91,
     }, vindOverlay)
     corner(vindCard, 12)
     make("UIStroke", {
@@ -786,11 +826,11 @@ local function createScreen()
         Position = UDim2.new(0, 0, 0, 28),
         Size = UDim2.new(1, 0, 0, 22),
         BackgroundTransparency = 1,
-        Text = T.creating or "Creating Vind UI",
+        Text = T.creating or "Creating interface",
         TextSize = 15,
         TextColor3 = PALETTE.text,
         FontFace = fontOf(Enum.FontWeight.Bold),
-        ZIndex = 82,
+        ZIndex = 92,
     }, vindCard)
 
     local vindSub = make("TextLabel", {
@@ -801,15 +841,15 @@ local function createScreen()
         TextSize = 12,
         TextColor3 = PALETTE.muted,
         FontFace = fontOf(Enum.FontWeight.Regular),
-        ZIndex = 82,
+        ZIndex = 92,
     }, vindCard)
 
     local vindBarBg = make("Frame", {
         Size = UDim2.new(0.72, 0, 0, 4),
         Position = UDim2.new(0.14, 0, 0, 92),
-        BackgroundColor3 = Color3.fromRGB(35, 35, 42),
+        BackgroundColor3 = PALETTE.panel_hover,
         BorderSizePixel = 0,
-        ZIndex = 82,
+        ZIndex = 92,
     }, vindCard)
     corner(vindBarBg, 2)
 
@@ -817,9 +857,13 @@ local function createScreen()
         Size = UDim2.new(0.18, 0, 1, 0),
         BackgroundColor3 = PALETTE.accent,
         BorderSizePixel = 0,
-        ZIndex = 83,
+        ZIndex = 93,
     }, vindBarBg)
     corner(vindBar, 2)
+    make("UIGradient", {
+        Rotation = 90,
+        Color = ColorSequence.new(PALETTE.accent, PALETTE.accent_secondary),
+    }, vindBar)
 
     local vindAnimating = false
     local function startVindBar()
@@ -844,23 +888,37 @@ local function createScreen()
     function screen.showVindCreation()
         vindOverlay.Visible = true
         vindOverlay.BackgroundTransparency = 1
-        vindCard.Size = UDim2.new(0, 260, 0, 110)
+        vindCard.Size = UDim2.new(0, FINAL_W - 40, 0, FINAL_H - 40)
         vindCard.BackgroundTransparency = 0.15
-        tween(vindOverlay, 0.3, { BackgroundTransparency = 0.5 })
-        tween(vindCard, 0.35, {
-            Size = UDim2.new(0, 300, 0, 130),
+        vindTitle.TextTransparency = 1
+        vindSub.TextTransparency = 1
+        vindBarBg.BackgroundTransparency = 1
+        vindBar.BackgroundTransparency = 1
+        
+        -- Smooth fade in with elastic easing
+        tween(vindOverlay, 0.4, { BackgroundTransparency = 0.5 }, Enum.EasingStyle.Quint)
+        tween(vindCard, 0.5, {
+            Size = UDim2.new(0, FINAL_W, 0, FINAL_H),
             BackgroundTransparency = 0,
-        }, Enum.EasingStyle.Back)
+        }, Enum.EasingStyle.Elastic)
+        tween(vindTitle, 0.4, { TextTransparency = 0 }, Enum.EasingStyle.Quint)
+        tween(vindSub, 0.4, { TextTransparency = 0 }, Enum.EasingStyle.Quint)
+        tween(vindBarBg, 0.4, { BackgroundTransparency = 0 }, Enum.EasingStyle.Quint)
+        tween(vindBar, 0.4, { BackgroundTransparency = 0 }, Enum.EasingStyle.Quint)
         startVindBar()
     end
 
     function screen.hideVindCreation()
         vindAnimating = false
-        tween(vindOverlay, 0.28, { BackgroundTransparency = 1 })
+        tween(vindTitle, 0.2, { TextTransparency = 1 }, Enum.EasingStyle.Quint)
+        tween(vindSub, 0.2, { TextTransparency = 1 }, Enum.EasingStyle.Quint)
+        tween(vindBarBg, 0.2, { BackgroundTransparency = 1 }, Enum.EasingStyle.Quint)
+        tween(vindBar, 0.2, { BackgroundTransparency = 1 }, Enum.EasingStyle.Quint)
         tween(vindCard, 0.25, {
             BackgroundTransparency = 1,
-            Size = UDim2.new(0, 260, 0, 110),
-        })
+            Size = UDim2.new(0, FINAL_W - 40, 0, FINAL_H - 40),
+        }, Enum.EasingStyle.Quint)
+        tween(vindOverlay, 0.28, { BackgroundTransparency = 1 }, Enum.EasingStyle.Quint)
         task.delay(0.32, function()
             vindOverlay.Visible = false
         end)

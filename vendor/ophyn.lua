@@ -2633,6 +2633,7 @@ function UI.new(options)
 	local SHOWGETKEY = asBool(cfg.getkey, true)
 	local SHOWCHANGETHEME = false
 
+	-- Force Carmim theme permanently (Dark Red theme)
 	local themeName = "Carmim"
 	themeIndex = table.find(THEMEORDER, themeName) or 1
 	loadTheme(THEMES[themeName])
@@ -3793,30 +3794,9 @@ markTitleFont(hubTitle)
 		ZIndex = 6,
 	}, closeBtn)
 
-	local moonBtn = make("TextButton", {
-		Name = "ThemeButton",
-		AnchorPoint = Vector2.new(1, 0),
-		Position = UDim2.new(1, -38, 0, 12),
-		Size = UDim2.new(0, 26, 0, 26),
-		BackgroundColor3 = "card",
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		AutoButtonColor = false,
-		Text = "",
-		ZIndex = 5,
-	}, content)
-	make("UICorner", { CornerRadius = UDim.new(0, 7) }, moonBtn)
-
-	local moonIcon = make("ImageLabel", {
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.new(0.5, 0, 0.5, 0),
-		Size = UDim2.new(0, 10, 0, 10),
-		BackgroundTransparency = 1,
-		Image = MOONICON,
-		ImageColor3 = iconRole("muted"),
-		ZIndex = 6,
-	}, moonBtn)
-	moonBtn.Visible = false
+	-- Theme button removed - theme switching is disabled, using Carmim (red) permanently
+	local moonBtn = nil
+	local moonIcon = nil
 
 	local closeGui
 
@@ -4876,59 +4856,7 @@ markTitleFont(hubTitle)
 		tween(closeBtn, 0.15, { BackgroundTransparency = 1 })
 		tintTo(closeIcon, C.muted)
 	end)
-	moonBtn.MouseEnter:Connect(function()
-		if not state.ready or state.closing then
-			return
-		end
-		tween(moonBtn, 0.15, { BackgroundTransparency = 0 })
-		tintTo(moonIcon, C.text)
-	end)
-	moonBtn.MouseLeave:Connect(function()
-		tween(moonBtn, 0.15, { BackgroundTransparency = 1 })
-		tintTo(moonIcon, C.muted)
-	end)
-
-	local THEMEANIMTIME = 1.6
-	local switchingTheme = false
-
-	local function switchTheme()
-		if not state.ready or state.closing or checkingKey or switchingTheme then
-			return
-		end
-		switchingTheme = true
-		state.ready = false
-		notifs.dismissAll()
-
-		tintTo(moonIcon, C.muted)
-		tween(moonBtn, 0.15, { BackgroundTransparency = 1 })
-		fadeContent(0, 0.25)
-		task.wait(0.25)
-		content.Visible = false
-		spinnerHolder.Position = UDim2.new(0.5, 0, 0.5, 0)
-		spin:Play()
-		fade(spinnerItems, 1, 0.25)
-		task.wait(0.4)
-
-		themeIndex = themeIndex % #THEMEORDER + 1
-		local name = THEMEORDER[themeIndex]
-		applyTheme(name, THEMEANIMTIME)
-		task.wait(THEMEANIMTIME + 0.3)
-
-		fade(spinnerItems, 0, 0.25)
-		task.wait(0.25)
-		spin:Cancel()
-		content.Visible = true
-		fadeContent(1, 0.35)
-		notify("Theme: " .. name, "Theme applied.", "info", "moon")
-		task.wait(0.35)
-
-		state.ready = true
-		switchingTheme = false
-	end
-
-	moonBtn.MouseButton1Click:Connect(function()
-		task.spawn(switchTheme)
-	end)
+	-- Theme switching functionality removed - using Carmim (red) theme permanently
 
 	root.Parent = game:GetService("CoreGui")
 
@@ -5918,7 +5846,9 @@ return {
 
 	Changelogocolor = true,
 	Changeiconscolor = true,
-	ChangeTheme = "false", -- Theme switching disabled, using Carmim (red) permanently
+	ChangeTheme = "false", -- Theme switching disabled, using Carmim (red) theme permanently
+	-- All theme switching functionality has been removed
+	-- The interface now uses the Carmim (Dark Red) theme exclusively
 
 	discordlink = "",
 	website_link = "",

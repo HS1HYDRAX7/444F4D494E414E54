@@ -11,15 +11,23 @@ local CoreGui = game:GetService("CoreGui")
 local PALETTE = {
     bg = Color3.fromRGB(8, 8, 10),
     panel = Color3.fromRGB(20, 20, 24),
-    accent = Color3.fromRGB(255, 255, 255),
-    muted = Color3.fromRGB(130, 130, 145),
-    text = Color3.fromRGB(245, 245, 250),
-    error = Color3.fromRGB(255, 100, 100),
+    panel_hover = Color3.fromRGB(28, 28, 36),
+    accent = Color3.fromRGB(0, 200, 255),
+    accent_secondary = Color3.fromRGB(100, 220, 255),
+    muted = Color3.fromRGB(130, 140, 160),
+    text = Color3.fromRGB(245, 248, 255),
+    text_secondary = Color3.fromRGB(180, 190, 210),
+    error = Color3.fromRGB(255, 85, 85),
+    success = Color3.fromRGB(80, 250, 123),
+    warn = Color3.fromRGB(255, 185, 0),
     glowFrom = Color3.fromRGB(255, 255, 255),
-    glowTo = Color3.fromRGB(190, 190, 210),
+    glowTo = Color3.fromRGB(190, 200, 230),
     glowBase = Color3.fromRGB(255, 255, 255),
     button = Color3.fromRGB(42, 42, 50),
     buttonHover = Color3.fromRGB(58, 58, 68),
+    buttonActive = Color3.fromRGB(70, 74, 88),
+    border = Color3.fromRGB(45, 50, 65),
+    shadow = Color3.fromRGB(0, 0, 0),
 }
 
 local IMAGES = {
@@ -29,19 +37,34 @@ local IMAGES = {
     logo = "",
 }
 
-local FINAL_W, FINAL_H = 460, 260
-local BANNER_H = 150
-local INTRO_SIZE = 80
-local SQUARE_TIME = 1.2
-local LOGO_W, LOGO_H = 46, 42
+local FINAL_W, FINAL_H = 500, 280
+local BANNER_H = 160
+local INTRO_SIZE = 85
+local SQUARE_TIME = 1.4
+local LOGO_W, LOGO_H = 52, 48
 local WORD = "DOMINANT"
 -- How far the progress bar goes at each step, unless the app sends its own fraction
-local STEP_PROGRESS = { interface = 0.04, modules = 0.2, game = 0.45, key = 0.6, window = 0.8 }
+local STEP_PROGRESS = { interface = 0.05, modules = 0.25, game = 0.50, key = 0.70, window = 0.90 }
 
 local TEXT = {
-    en = { stall = "Step took too long", modules = "Loading modules", game = "Detecting game", key = "Waiting for key", window = "Building interface", ready = "Ready", failed = "Could not load Dominant", retry = "Retry", check = "Check your connection and retry", creating = "Creating Vind UI", please = "Please wait..." },
-    pt = { stall = "Uma etapa demorou demais", modules = "Carregando módulos", game = "Detectando jogo", key = "Aguardando key", window = "Montando interface", ready = "Pronto", failed = "Não foi possível carregar o Dominant", retry = "Tentar de novo", check = "Verifique sua conexão e tente de novo", creating = "Criando interface Vind", please = "Aguarde..." },
-    es = { stall = "Un paso tardó demasiado", modules = "Cargando módulos", game = "Detectando juego", key = "Esperando key", window = "Construyendo interfaz", ready = "Listo", failed = "No se pudo cargar Dominant", retry = "Reintentar", check = "Revisa tu conexión e inténtalo de nuevo", creating = "Creando interfaz Vind", please = "Espere..." },
+    en = {
+        stall = "Step took too long",
+        modules = "Loading modules",
+        game = "Detecting game",
+        key = "Waiting for key",
+        window = "Building interface",
+        ready = "Ready",
+        failed = "Could not load Dominant",
+        retry = "Retry",
+        check = "Check your connection and retry",
+        creating = "Creating interface",
+        please = "Please wait...",
+        welcome = "Welcome to DOMINANT",
+        loading = "Loading...",
+        success = "Loaded successfully!"
+    },
+    pt = { stall = "Uma etapa demorou demais", modules = "Carregando módulos", game = "Detectando jogo", key = "Aguardando key", window = "Montando interface", ready = "Pronto", failed = "Não foi possível carregar o Dominant", retry = "Tentar de novo", check = "Verifique sua conexão e tente de novo", creating = "Criando interface", please = "Aguarde..." },
+    es = { stall = "Un paso tardó demasiado", modules = "Cargando módulos", game = "Detectando juego", key = "Esperando key", window = "Construyendo interfaz", ready = "Listo", failed = "No se pudo cargar Dominant", retry = "Reintentar", check = "Revisa tu conexión e inténtalo de nuevo", creating = "Creando interfaz", please = "Espere..." },
     ru = { stall = "Этап выполняется слишком долго", modules = "Загрузка модулей", game = "Определение игры", key = "Ожидание ключа", window = "Сборка интерфейса", ready = "Готово", failed = "Не удалось загрузить Dominant", retry = "Повторить", check = "Проверьте соединение и повторите", creating = "Создание интерфейса Vind", please = "Подождите..." },
 }
 
@@ -255,6 +278,8 @@ local function createScreen()
     glow(decorFrame, 100, 46, -8, 252, 0.75, 90)
     glow(decorFrame, 400, 184, 450, 8, 0.92, 90)
     glow(decorFrame, 70, 138, 5, -5, 0.78, 90)
+    glow(decorFrame, 200, 100, -100, 130, 0.82, 45)
+    glow(decorFrame, 150, 80, 480, -60, 0.75, 135)
 
     -- Lockup: the DOMINANT letters followed by the logo. It starts centred on the
     -- logo and travels to the bottom-right corner while the letters appear behind it.
@@ -573,7 +598,7 @@ local function createScreen()
     function screen.intro()
         task.spawn(function()
             main.Size = UDim2.new(0, INTRO_SIZE - 20, 0, INTRO_SIZE - 20)
-            local grow = tween(main, 0.6, { Size = UDim2.new(0, INTRO_SIZE, 0, INTRO_SIZE) }, Enum.EasingStyle.Quint)
+            local grow = tween(main, 0.7, { Size = UDim2.new(0, INTRO_SIZE, 0, INTRO_SIZE) }, Enum.EasingStyle.Elastic)
             tween(canvas, 0.5, { BackgroundTransparency = 0 })
             tween(decor, 0.5, { GroupTransparency = 0 })
             tween(logo, 0.5, { ImageTransparency = 0 })
@@ -583,11 +608,11 @@ local function createScreen()
             task.wait(SQUARE_TIME - 0.6)
 
             tween(border, 0.7, { Transparency = 1 })
-            local expand = tween(main, 0.85, { Size = UDim2.new(0, FINAL_W, 0, FINAL_H) }, Enum.EasingStyle.Quint)
-            tween(lockup, 0.85, { Position = UDim2.new(1, -18, 1, -18) }, Enum.EasingStyle.Quint)
+            local expand = tween(main, 0.95, { Size = UDim2.new(0, FINAL_W, 0, FINAL_H) }, Enum.EasingStyle.Elastic)
+            tween(lockup, 0.95, { Position = UDim2.new(1, -22, 1, -22) }, Enum.EasingStyle.Elastic)
             for index, letter in ipairs(letters) do
-                task.delay(0.15 + (index - 1) * 0.09, function()
-                    tween(letter, 0.3, { TextTransparency = 0 })
+                task.delay(0.2 + (index - 1) * 0.1, function()
+                    tween(letter, 0.35, { TextTransparency = 0 })
                 end)
             end
             expand.Completed:Wait()

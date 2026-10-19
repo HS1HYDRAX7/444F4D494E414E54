@@ -5,6 +5,37 @@ local TweenService      = game:GetService("TweenService")
 local Players           = game:GetService("Players")
 local UserInputService  = game:GetService("UserInputService")
 local RunService        = game:GetService("RunService")
+
+-- ========== Enhanced Color Themes for Vind ==========
+local VIND_THEMES = {
+    Dark = {
+        bg = Color3.fromRGB(12, 12, 16),
+        panel = Color3.fromRGB(24, 24, 32),
+        accent = Color3.fromRGB(0, 200, 255),
+        text = Color3.fromRGB(245, 248, 255),
+        muted = Color3.fromRGB(130, 140, 160),
+    },
+    Light = {
+        bg = Color3.fromRGB(245, 245, 250),
+        panel = Color3.fromRGB(255, 255, 255),
+        accent = Color3.fromRGB(0, 150, 255),
+        text = Color3.fromRGB(30, 30, 40),
+        muted = Color3.fromRGB(150, 150, 170),
+    },
+    Amethyst = {
+        bg = Color3.fromRGB(20, 16, 28),
+        panel = Color3.fromRGB(32, 24, 44),
+        accent = Color3.fromRGB(180, 100, 255),
+        text = Color3.fromRGB(245, 240, 255),
+        muted = Color3.fromRGB(150, 130, 180),
+    }
+}
+
+local function getVindTheme(themeName)
+    return VIND_THEMES[themeName or "Dark"]
+end
+
+
 local TextService       = game:GetService("TextService")
 local Lighting          = game:GetService("Lighting")
 local HttpService       = game:GetService("HttpService")

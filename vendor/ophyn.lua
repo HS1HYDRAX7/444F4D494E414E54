@@ -15,6 +15,122 @@ local function import(path)
 	return value
 end
 
+
+-- ========== Enhanced Color Themes ==========
+local THEMES = {
+    Dark = {
+        bg = Color3.fromRGB(18, 18, 24),
+        panel = Color3.fromRGB(24, 24, 32),
+        panel_hover = Color3.fromRGB(32, 32, 44),
+        accent = Color3.fromRGB(0, 200, 255),
+        accent_secondary = Color3.fromRGB(100, 220, 255),
+        text = Color3.fromRGB(245, 248, 255),
+        text_secondary = Color3.fromRGB(180, 190, 210),
+        muted = Color3.fromRGB(130, 140, 160),
+        border = Color3.fromRGB(45, 50, 65),
+        button = Color3.fromRGB(36, 38, 48),
+        buttonHover = Color3.fromRGB(50, 54, 68),
+        error = Color3.fromRGB(255, 85, 85),
+        success = Color3.fromRGB(80, 250, 123),
+        inputBg = Color3.fromRGB(32, 34, 42),
+        inputStroke = Color3.fromRGB(60, 66, 80),
+        submitBg = Color3.fromRGB(0, 200, 255),
+        submitText = Color3.fromRGB(255, 255, 255),
+        btn2 = Color3.fromRGB(42, 42, 50),
+        card = Color3.fromRGB(24, 24, 32),
+        tintIcons = true,
+    },
+    Amethyst = {
+        bg = Color3.fromRGB(20, 16, 28),
+        panel = Color3.fromRGB(32, 24, 44),
+        panel_hover = Color3.fromRGB(44, 32, 56),
+        accent = Color3.fromRGB(180, 100, 255),
+        accent_secondary = Color3.fromRGB(220, 150, 255),
+        text = Color3.fromRGB(245, 240, 255),
+        text_secondary = Color3.fromRGB(200, 180, 220),
+        muted = Color3.fromRGB(150, 130, 180),
+        border = Color3.fromRGB(70, 50, 90),
+        button = Color3.fromRGB(48, 36, 64),
+        buttonHover = Color3.fromRGB(68, 50, 88),
+        error = Color3.fromRGB(255, 85, 120),
+        success = Color3.fromRGB(100, 250, 150),
+        inputBg = Color3.fromRGB(44, 32, 56),
+        inputStroke = Color3.fromRGB(90, 70, 110),
+        submitBg = Color3.fromRGB(180, 100, 255),
+        submitText = Color3.fromRGB(255, 255, 255),
+        btn2 = Color3.fromRGB(58, 44, 72),
+        card = Color3.fromRGB(32, 24, 44),
+        tintIcons = true,
+    },
+    Carmim = {
+        bg = Color3.fromRGB(24, 12, 16),
+        panel = Color3.fromRGB(36, 20, 24),
+        panel_hover = Color3.fromRGB(48, 28, 32),
+        accent = Color3.fromRGB(255, 50, 100),
+        accent_secondary = Color3.fromRGB(255, 100, 140),
+        text = Color3.fromRGB(255, 240, 245),
+        text_secondary = Color3.fromRGB(220, 180, 190),
+        muted = Color3.fromRGB(160, 120, 130),
+        border = Color3.fromRGB(80, 40, 50),
+        button = Color3.fromRGB(56, 28, 36),
+        buttonHover = Color3.fromRGB(76, 36, 44),
+        error = Color3.fromRGB(255, 100, 100),
+        success = Color3.fromRGB(255, 180, 200),
+        inputBg = Color3.fromRGB(48, 28, 32),
+        inputStroke = Color3.fromRGB(100, 60, 70),
+        submitBg = Color3.fromRGB(255, 50, 100),
+        submitText = Color3.fromRGB(255, 255, 255),
+        btn2 = Color3.fromRGB(66, 32, 40),
+        card = Color3.fromRGB(36, 20, 24),
+        tintIcons = true,
+    },
+}
+
+-- Function to get current theme colors
+local function getTheme(themeName)
+    return THEMES[themeName or "Dark"]
+end
+
+-- ========== Enhanced Animation Utilities ==========
+local function springTween(instance, props, frequency, damping)
+    local info = TweenInfo.new(
+        1,
+        Enum.EasingStyle.Spring,
+        Enum.EasingDirection.Out,
+        frequency or 4,
+        damping or 0.8
+    )
+    local tween = TweenService:Create(instance, info, props)
+    tween:Play()
+    return tween
+end
+
+local function bounceTween(instance, props, bounciness)
+    local info = TweenInfo.new(
+        1,
+        Enum.EasingStyle.Bounce,
+        Enum.EasingDirection.Out,
+        bounciness or 0.5
+    )
+    local tween = TweenService:Create(instance, info, props)
+    tween:Play()
+    return tween
+end
+
+local function elasticTween(instance, props, period)
+    local info = TweenInfo.new(
+        1,
+        Enum.EasingStyle.Elastic,
+        Enum.EasingDirection.Out,
+        period or 0.3
+    )
+    local tween = TweenService:Create(instance, info, props)
+    tween:Play()
+    return tween
+end
+
+
+
 modules["components/nothing.com/yeahnothing"] = function()
 
 end

@@ -1,0 +1,530 @@
+--[[
+    Auto Backstab v1.2
+]]
+
+-- ============================================================
+-- SERVICES
+-- ============================================================
+local Players          = game:GetService("Players")
+local RunService       = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local CoreGui          = game:GetService("CoreGui")
+local StarterGui       = game:GetService("StarterGui")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local lp = Players.LocalPlayer
+
+local function notify(title, text, duration)
+    StarterGui:SetCore("SendNotification", {
+        Title = title,
+        Text = text,
+        Duration = duration or 5
+    })
+end
+
+local version = "1.2"
+local TARGET_ANIMATION_ID = "100725497418533"
+local DASHSTAB_ANIM_ID    = "89448354637442"
+
+-- ============================================================
+-- CONFIG
+-- ============================================================
+local isEnabled           = true
+local isAutoStudsEnabled  = false
+local isDetectPingEnabled = false
+
+local moredirectenabled = false
+local moredirectrn = false
+local moredirectend = false
+
+local distcheck = false
+local distcheckstud = 7
+
+local startdelay   = 0.05
+local duration     = 0.2
+local behindstuds  = 4
+
+local speed = lp.Character and lp.Character.SpeedMultipliers.Sprinting
+local doitmate = false
+
+local autoStandStuds = 5.5
+local autoRunStuds   = 3.4
+
+local isDashstabEnabled = false
+local dsStartDelay = 0.1
+
+local running = false
+
+-- ============================================================
+-- LOAD RAYFIELD
+-- ============================================================
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+
+local Window = Rayfield:CreateWindow({
+    Name = "Auto Backstab v" .. version,
+    LoadingTitle = "Auto Backstab Loading...",
+    LoadingSubtitle = "v" .. version,
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "AutoBackstab",
+        FileName = "Config",
+    },
+    Discord = { Enabled = false },
+    KeySystem = false,
+})
+
+-- ============================================================
+-- TABS
+-- ============================================================
+local MainTab     = Window:CreateTab("Main", 4483362458)
+local AutoStudsTab = Window:CreateTab("TwoTimeRealHitbox", 4483362458)
+local DashstabTab = Window:CreateTab("Dashstab", 4483362458)
+local SettingsTab = Window:CreateTab("Settings", 4483362458)
+
+-- ============================================================
+-- MAIN TAB
+-- ============================================================
+MainTab:CreateSection("Main Control")
+
+MainTab:CreateToggle({
+    Name = "Main Toggle",
+    CurrentValue = true,
+    Flag = "MainToggle",
+    Callback = function(val) isEnabled = val end,
+})
+
+MainTab:CreateSection("Timing")
+
+MainTab:CreateInput({
+    Name = "Start Delay",
+    PlaceholderText = "0.05",
+    RemoveTextAfterFocusLost = false,
+    Flag = "StartDelay",
+    Callback = function(text)
+        local num = tonumber(text)
+        if num then startdelay = num end
+    end,
+})
+
+MainTab:CreateInput({
+    Name = "Duration",
+    PlaceholderText = "0.2",
+    RemoveTextAfterFocusLost = false,
+    Flag = "Duration",
+    Callback = function(text)
+        local num = tonumber(text)
+        if num then duration = num end
+    end,
+})
+
+local behindStudsBox = MainTab:CreateInput({
+    Name = "Behind Studs",
+    PlaceholderText = "4",
+    RemoveTextAfterFocusLost = false,
+    Flag = "BehindStuds",
+    Callback = function(text)
+        local num = tonumber(text)
+        if num then behindstuds = num end
+    end,
+})
+
+MainTab:CreateSection("Distance Check")
+
+MainTab:CreateToggle({
+    Name = "Distance Check",
+    CurrentValue = false,
+    Flag = "DistanceCheck",
+    Callback = function(val) distcheck = val end,
+})
+
+MainTab:CreateInput({
+    Name = "Stud Distance",
+    PlaceholderText = "7",
+    RemoveTextAfterFocusLost = false,
+    Flag = "DistCheckStuds",
+    Callback = function(text)
+        local num = tonumber(text)
+        if num then distcheckstud = num end
+    end,
+})
+
+MainTab:CreateSection("Behavior")
+
+MainTab:CreateToggle({
+    Name = "More Direct",
+    CurrentValue = false,
+    Flag = "MoreDirect",
+    Callback = function(val) moredirectenabled = val end,
+})
+
+-- ============================================================
+-- AUTO STUDS TAB
+-- ============================================================
+AutoStudsTab:CreateSection("Auto Studs")
+
+AutoStudsTab:CreateToggle({
+    Name = "Auto Studs",
+    CurrentValue = false,
+    Flag = "AutoStuds",
+    Callback = function(val) isAutoStudsEnabled = val end,
+})
+
+AutoStudsTab:CreateToggle({
+    Name = "Also Detect Ping",
+    CurrentValue = false,
+    Flag = "DetectPing",
+    Callback = function(val) isDetectPingEnabled = val end,
+})
+
+AutoStudsTab:CreateSection("Stud Distances")
+
+AutoStudsTab:CreateInput({
+    Name = "Behind Studs When Standing",
+    PlaceholderText = "5.5",
+    RemoveTextAfterFocusLost = false,
+    Flag = "AutoStandStuds",
+    Callback = function(text)
+        local num = tonumber(text)
+        if num then autoStandStuds = num end
+    end,
+})
+
+AutoStudsTab:CreateInput({
+    Name = "Behind Studs When Running",
+    PlaceholderText = "3.4",
+    RemoveTextAfterFocusLost = false,
+    Flag = "AutoRunStuds",
+    Callback = function(text)
+        local num = tonumber(text)
+        if num then autoRunStuds = num end
+    end,
+})
+
+-- ============================================================
+-- DASHSTAB TAB
+-- ============================================================
+DashstabTab:CreateSection("Dashstab")
+
+DashstabTab:CreateToggle({
+    Name = "Dashstab",
+    CurrentValue = false,
+    Flag = "DashstabToggle",
+    Callback = function(val) isDashstabEnabled = val end,
+})
+
+DashstabTab:CreateInput({
+    Name = "DS Start Delay",
+    PlaceholderText = "0.1",
+    RemoveTextAfterFocusLost = false,
+    Flag = "DSStartDelay",
+    Callback = function(text)
+        local num = tonumber(text)
+        if num then dsStartDelay = num end
+    end,
+})
+
+-- ============================================================
+-- SETTINGS TAB
+-- ============================================================
+SettingsTab:CreateSection("Info")
+SettingsTab:CreateParagraph({
+    Title = "Auto Backstab v" .. version,
+    Content = "Toggle the main switch to enable. Auto Studs dynamically adjusts behindStuds based on killer speed.",
+})
+
+SettingsTab:CreateButton({
+    Name = "Re-show notification",
+    Callback = function()
+        notify("Auto Backstab", "Script loaded — Rayfield UI active", 5)
+    end,
+})
+
+-- ============================================================
+-- SCRIPT LOGIC (unchanged)
+-- ============================================================
+local function getCharacter()
+    return lp.Character or lp.CharacterAdded:Wait()
+end
+
+local function getKillerFolder()
+    local playersFolder = workspace:FindFirstChild("Players")
+    if not playersFolder then return nil end
+    return playersFolder:FindFirstChild("Killers")
+end
+
+local function getFirstValidKillerModel()
+    local killerFolder = getKillerFolder()
+    if not killerFolder then return nil end
+    for _, inst in ipairs(killerFolder:GetDescendants()) do
+        if inst:IsA("Model") then
+            local hum = inst:FindFirstChildOfClass("Humanoid")
+            local hrp = inst:FindFirstChild("HumanoidRootPart")
+            if hum and hrp and hum.Health > 0 then
+                return inst
+            end
+        end
+    end
+    return nil
+end
+
+local function getPing()
+    local success, val = pcall(function()
+        return game:GetService("Stats").Network.ServerStatsItem["Data Ping"]:GetValue()
+    end)
+    if success and val then return val end
+
+    local success2, val2 = pcall(function()
+        return lp:GetNetworkPing() * 1000
+    end)
+    if success2 and val2 then return val2 end
+
+    return 20
+end
+
+local function runPlaceSequence()
+    if not isEnabled or running then return end
+    running = true
+
+    local character = getCharacter()
+    local hrp = character:WaitForChild("HumanoidRootPart")
+
+    task.wait(startdelay)
+
+    if not character.Parent then
+        running = false
+        return
+    end
+
+    local place = Instance.new("Part")
+    place.Name = "place"
+    place.Size = Vector3.new(2, 2, 2)
+    place.Transparency = 0
+    place.CanCollide = false
+    place.Anchored = true
+    place.Parent = character
+
+    local originalPrimaryPart = character.PrimaryPart
+    local oldspeed = speed.Value
+
+    if moredirectenabled then
+        moredirectrn = true
+        task.wait(0.01)
+        moredirectrn = false
+    end
+
+    local startTime = os.clock()
+    while os.clock() - startTime < duration do
+        if not character.Parent or not place.Parent or not isEnabled then break end
+        speed.Value = 0
+        doitmate = true
+        RunService.PreRender:Wait()
+    end
+
+    if place and place.Parent then place:Destroy() end
+    if character and character.Parent then character.PrimaryPart = originalPrimaryPart end
+
+    speed.Value = oldspeed
+    doitmate = false
+
+    if moredirectenabled then
+        moredirectrn = true
+        task.wait(0.01)
+        moredirectend = true
+        moredirectrn = false
+        task.wait(0.01)
+        moredirectend = false
+    end
+
+    running = false
+end
+
+local function runDashstabSequence()
+    if not isDashstabEnabled or running then return end
+    running = true
+
+    local character = getCharacter()
+
+    task.wait(dsStartDelay)
+
+    local hrp = character and character:FindFirstChild("HumanoidRootPart")
+    if not character.Parent or not hrp then
+        running = false
+        return
+    end
+
+    local place = Instance.new("Part")
+    place.Name = "place"
+    place.Size = Vector3.new(2, 2, 2)
+    place.Transparency = 0
+    place.CanCollide = false
+    place.Anchored = true
+    place.Parent = character
+
+    local originalPrimaryPart = character.PrimaryPart
+    local oldspeed = speed.Value
+
+    if moredirectenabled then
+        moredirectrn = true
+        task.wait(0.01)
+        moredirectrn = false
+    end
+
+    local startTime = os.clock()
+    while os.clock() - startTime < duration do
+        if not character.Parent or not place.Parent or not isDashstabEnabled then break end
+        speed.Value = 0
+        doitmate = true
+        RunService.PreRender:Wait()
+    end
+
+    speed.Value = oldspeed
+    doitmate = false
+
+    if moredirectenabled then
+        moredirectrn = true
+        task.wait(0.001)
+        moredirectend = true
+        moredirectrn = false
+        task.wait(0.001)
+        moredirectend = false
+    end
+
+    if place and place.Parent then place:Destroy() end
+    if character and character.Parent then character.PrimaryPart = originalPrimaryPart end
+
+    running = false
+end
+
+local player = Players.LocalPlayer
+
+-- Network module + hookfunction
+local NetworkModule = require(ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Network"):WaitForChild("Network"))
+
+local oldFireServerConnection
+oldFireServerConnection = hookfunction(NetworkModule.FireServerConnection, function(self, connectionName, eventType, ...)
+    local args = {...}
+
+    if connectionName == "UpdateCharacterPosition" then
+        local character = player.Character
+        local hrp = character and character:FindFirstChild("HumanoidRootPart")
+        local killerModel = getFirstValidKillerModel()
+        if killerModel then
+            local killerHrp = killerModel:FindFirstChild("HumanoidRootPart")
+            if killerHrp then
+                if hrp then
+                    local targetCFrame    = killerHrp.CFrame * CFrame.new(0, 0, behindstuds)
+                    local targetdirect    = hrp.CFrame * CFrame.new(0, -90000, 0)
+                    local targetdirectend = hrp.CFrame * CFrame.new(0, 0, 0)
+
+                    local CharacterReplication = require(
+                        ReplicatedStorage:WaitForChild("Systems"):WaitForChild("Player"):WaitForChild("Game"):WaitForChild("CharacterReplication")
+                    )
+                    if moredirectrn then
+                        args[1] = CharacterReplication.Serialize(targetdirect, hrp.AssemblyLinearVelocity)
+                    elseif moredirectend then
+                        args[1] = CharacterReplication.Serialize(targetdirectend, hrp.AssemblyLinearVelocity)
+                    elseif doitmate then
+                        args[1] = CharacterReplication.Serialize(targetCFrame, hrp.AssemblyLinearVelocity)
+                    end
+                end
+            end
+        end
+    end
+
+    return oldFireServerConnection(self, connectionName, eventType, unpack(args))
+end)
+
+local function check(hrp1, hrp2, range)
+    if not hrp1 or not hrp2 then return false end
+    return (hrp1.Position - hrp2.Position).Magnitude <= range
+end
+
+local function hookCharacter(character)
+    local humanoid = character:WaitForChild("Humanoid")
+    local animator = humanoid:FindFirstChild("Animator")
+    if not animator then return end
+
+    animator.AnimationPlayed:Connect(function(track)
+        if not track or not track.Animation then return end
+        local killer = getFirstValidKillerModel()
+        if not killer then return end
+        local id = tostring(track.Animation.AnimationId or ""):gsub("%D", "")
+
+        if (id == TARGET_ANIMATION_ID or id == "106086955212611") and isEnabled then
+            if distcheck then
+                if not check(character.HumanoidRootPart, killer.HumanoidRootPart, distcheckstud) then return end
+            end
+            task.spawn(runPlaceSequence)
+        elseif (id == DASHSTAB_ANIM_ID or id == "107640065977686") and isDashstabEnabled then
+            if distcheck then
+                if not check(character.HumanoidRootPart, killer.HumanoidRootPart, distcheckstud) then return end
+            end
+            task.spawn(runDashstabSequence)
+        end
+    end)
+end
+
+-- Auto Studs — dynamic behindstuds calculation
+local lastKillerModel = nil
+local lastKillerPos = nil
+local smoothedSpeed = 0
+
+RunService.Heartbeat:Connect(function(dt)
+    if isAutoStudsEnabled then
+        local killerModel = getFirstValidKillerModel()
+        if killerModel then
+            local killerHrp = killerModel:FindFirstChild("HumanoidRootPart")
+            if killerHrp then
+                local currentPos = killerHrp.Position
+                local rawSpeed = 0
+
+                if lastKillerModel == killerModel and lastKillerPos then
+                    local horizontalDelta = Vector3.new(currentPos.X, 0, currentPos.Z) - Vector3.new(lastKillerPos.X, 0, lastKillerPos.Z)
+                    rawSpeed = horizontalDelta.Magnitude / dt
+                end
+
+                lastKillerModel = killerModel
+                lastKillerPos = currentPos
+
+                smoothedSpeed = smoothedSpeed + (rawSpeed - smoothedSpeed) * math.min(dt * 15, 1)
+                local finalSpeed = math.clamp(smoothedSpeed, 0, 30)
+
+                local studsAtRun = autoRunStuds
+                if isDetectPingEnabled then
+                    local ping = getPing()
+                    local clampedPing = math.max(ping, 20)
+                    studsAtRun = autoRunStuds - ((clampedPing - 20) / 100) * 1.5
+                    studsAtRun = math.max(studsAtRun, 1.0)
+                end
+
+                local slope = (autoStandStuds - studsAtRun) / 26.0
+                local calculatedStuds = autoStandStuds - (finalSpeed * slope)
+
+                behindstuds = calculatedStuds
+
+                if not behindStudsBox:IsFocused() then
+                    behindStudsBox:Set(string.format("%.1f", calculatedStuds))
+                end
+            else
+                lastKillerModel = nil
+            end
+        else
+            lastKillerModel = nil
+            smoothedSpeed = 0
+        end
+    else
+        lastKillerModel = nil
+        smoothedSpeed = 0
+    end
+end)
+
+if lp.Character then
+    hookCharacter(lp.Character)
+end
+lp.CharacterAdded:Connect(hookCharacter)
+
+-- Load saved config
+Rayfield:LoadConfiguration()
+
+print("[Auto Backstab v" .. version .. "] Rayfield UI loaded")
+notify("Auto Backstab v" .. version, "Loaded — RightShift toggles UI", 5)

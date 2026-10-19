@@ -524,8 +524,8 @@ local function createScreen()
     end
 
     -- Enhanced shadow with multiple layers
-    shadow(main, 60, 60, -30, -30, Color3.new(0, 0, 0), 0.8)
-    shadow(main, 40, 40, -20, -20, Color3.new(0, 0, 0), 0.6)
+    local mainShadow1 = shadow(main, 60, 60, -30, -30, Color3.new(0, 0, 0), 0.8)
+    local mainShadow2 = shadow(main, 40, 40, -20, -20, Color3.new(0, 0, 0), 0.6)
 
     local canvas = make("Frame", {
         Size = UDim2.new(1, 0, 1, 0),
@@ -902,7 +902,8 @@ local function createScreen()
             tween(decor, 0.55, { GroupTransparency = 0 })
             tween(logo, 0.55, { ImageTransparency = 0 })
             tween(border, 0.55, { Transparency = 0.5 })
-            tween(shadow(main, 60, 60, -30, -30), 0.55, { ImageTransparency = 0.7 })
+            local introShadow = shadow(main, 60, 60, -30, -30)
+            tween(introShadow, 0.55, { ImageTransparency = 0.7 })
             
             grow.Completed:Wait()
             task.wait(SQUARE_TIME - 0.7)
@@ -1057,7 +1058,8 @@ local function createScreen()
             tween(statusPill, 0.35, { BackgroundTransparency = 1 })
             tween(barContainer.track, 0.35, { BackgroundTransparency = 1 })
             tween(barContainer.fill, 0.35, { BackgroundTransparency = 1 })
-            tween(shadow(main, 60, 60, -30, -30), 0.45, { ImageTransparency = 1 })
+            local finishShadow = shadow(main, 60, 60, -30, -30)
+            tween(finishShadow, 0.45, { ImageTransparency = 1 })
             tween(decor, 0.45, { GroupTransparency = 1 })
             local last = tween(canvas, 0.45, { BackgroundTransparency = 1 })
             last.Completed:Wait()

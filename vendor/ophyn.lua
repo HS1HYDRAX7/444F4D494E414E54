@@ -5865,7 +5865,7 @@ return {
 		autoconfirm = false, -- true: runs the Callback automatically when the UI opens
 	},
 
-	NotifStyle = "1",
+	NotifStyle = "2",  -- Estilo 2 para notificações (configuração do usuário)
 
 	TabsStyle = "1",
 

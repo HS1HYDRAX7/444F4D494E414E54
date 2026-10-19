@@ -2631,12 +2631,9 @@ function UI.new(options)
 	settings.tintLogo = asBool(cfg.Changelogocolor, true)
 	settings.tintIcons = asBool(cfg.Changeiconscolor, true)
 	local SHOWGETKEY = asBool(cfg.getkey, true)
-	local SHOWCHANGETHEME = asBool(cfg.ChangeTheme, true)
+	local SHOWCHANGETHEME = false
 
-	local themeName = cfg.Theme
-	if not THEMES[themeName] then
-		themeName = "Amethyst"
-	end
+	local themeName = "Carmim"
 	themeIndex = table.find(THEMEORDER, themeName) or 1
 	loadTheme(THEMES[themeName])
 
@@ -3819,7 +3816,7 @@ markTitleFont(hubTitle)
 		ImageColor3 = iconRole("muted"),
 		ZIndex = 6,
 	}, moonBtn)
-	moonBtn.Visible = SHOWCHANGETHEME
+	moonBtn.Visible = false
 
 	local closeGui
 
@@ -5921,7 +5918,7 @@ return {
 
 	Changelogocolor = true,
 	Changeiconscolor = true,
-	ChangeTheme = "true", -- "false": disable moon icon to change Theme
+	ChangeTheme = "false", -- Theme switching disabled, using Carmim (red) permanently
 
 	discordlink = "",
 	website_link = "",

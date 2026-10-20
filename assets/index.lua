@@ -1,7 +1,7 @@
 -- Map keys -> real filenames on the repo (WITH SPACES, as uploaded)
 -- Download URL is encoded in shared/assets.lua
 return {
-    logo = "logo.png",
+    logo = "dominant small.png",
     default_background = "default.png",
     sound_notification = "sounds/notification.mp3",
     sound_startup = "sounds/startup.mp3",
